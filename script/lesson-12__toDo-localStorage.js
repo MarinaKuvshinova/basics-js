@@ -59,7 +59,6 @@ todoControl.addEventListener('submit', (e) => {
         headerInput.value = '';
     
         todoData.push(newTodo);
-        renderStorage();
         render();
     }
 
