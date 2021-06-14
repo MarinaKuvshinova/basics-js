@@ -131,8 +131,6 @@ let appData = {
             });
         }
         expensesPlus.style.display = 'block';
-
-
     },
     resetObj : function () {
         for (let key in this) {
