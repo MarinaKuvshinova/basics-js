@@ -252,9 +252,12 @@ incomePlus.addEventListener('click', appData.addIncomeBlock);
 periodSelect.addEventListener('input', appData.setPerionAmount);
 
 salaryAmount.addEventListener('input', (e) => {
-    start.disabled = e.target.value !== '' ? false : true;
+    appData.validInput(e, true);
+    start.disabled = e.target.value === '' ? true :  false;
 });
-
+salaryAmount.addEventListener('input', (e) => {
+    appData.validInput(e, true);
+});
 
 let income = document.querySelector('.income'),
     additionalIncome = document.querySelector('.additional_income'),
@@ -284,9 +287,9 @@ expenses.addEventListener('input', (e) => {
     }
 });
 
-salaryAmount.addEventListener('input', (e) => {
-    appData.validInput(e, true);
-});
+// salaryAmount.addEventListener('input', (e) => {
+//     appData.validInput(e, true);
+// });
 
 targetAmount.addEventListener('input', (e) => {
     appData.validInput(e, true);
