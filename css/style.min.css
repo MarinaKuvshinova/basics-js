@@ -4,3 +4,6 @@
     cursor: auto;
     pointer-events: none;
 }
+.data input[type="text"]:disabled {
+    opacity: .3;
+}
