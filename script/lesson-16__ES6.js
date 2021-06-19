@@ -39,7 +39,7 @@ let dataCol = document.querySelector('.data'),
     cancel = document.getElementById('cancel'),
     incomePlus = dataCol.querySelector('.income').getElementsByTagName('button')[0],
     expensesPlus = dataCol.querySelector('.expenses').getElementsByTagName('button')[0],
-    checkboxDeposit = dataCol.querySelector('#deposit-check'),
+    // checkboxDeposit = dataCol.querySelector('#deposit-check'),
     additionalIncomeItem = document.querySelectorAll('.additional_income-item'),
     budgetDayValue = document.getElementsByClassName('budget_day-value')[0],
     budgetMonthValue = document.getElementsByClassName('budget_month-value')[0],
@@ -56,7 +56,11 @@ let dataCol = document.querySelector('.data'),
     additionalExpensesItem = dataCol.querySelectorAll('.additional_expenses-item'),
     targetAmount = dataCol.querySelector('.target-amount'),
     periodSelect = dataCol.querySelector('.period-select'),
-    incomeItems = document.querySelectorAll('.income-items');
+    incomeItems = document.querySelectorAll('.income-items'),
+    depositCheck = document.getElementById('deposit-check'),
+    depositBank = document.querySelector('.deposit-bank'),
+    depositAmount = document.querySelector('.deposit-amount'),
+    depositPercent = document.querySelector('.deposit-percent');
 
 class AppData {
     constructor(income = {}, incomeMonth = 0, addIncome = [], expenses = {}, addExpenses = [], 
@@ -74,6 +78,7 @@ class AppData {
         this.budgetDay = budgetDay;
         this.budgetMonth = budgetMonth;
         this.expensesMonth = expensesMonth;
+        this.checkConformity = true;
     }
 
     start() {
@@ -81,10 +86,12 @@ class AppData {
         this.getExpInc(); 
         this.getExpensesMonth();
         this.getAddExpInc();
+        this.getInfoDeposit();
         this.getBudget();
         this.getBudgetDay();
         this.showResult();
         this.blockingInput();
+        this.setCookie();
     }
 
     reset() {
@@ -96,7 +103,8 @@ class AppData {
         start.style.display = 'block';
         cancel.style.display = 'none';
         start.disabled = true;
-        checkboxDeposit.checked = false;
+        depositCheck.checked = false;
+        depositBank.value = '';
         document.querySelector('.period-amount').textContent = '1';
     
         let inputText = dataCol.querySelectorAll('input[type="text"]');
@@ -128,6 +136,16 @@ class AppData {
             });
         }
         expensesPlus.style.display = 'block';
+
+        //reset percent 
+        depositBank.value = '';
+        depositBank.style.display = 'none';
+        depositAmount.value = '';
+        depositAmount.style.display = 'none';
+        depositPercent.value = '';
+        depositPercent.style.display = 'none';
+
+        this.resetCookie();
     }
 
     resetObj() {
@@ -240,7 +258,8 @@ class AppData {
     }
 
     getBudget() {
-        this.budgetMonth = this.budget + this.incomeMonth - this.expensesMonth;
+        const monthDeposit = this.moneyDeposit * (this.percentDeposit / 100);
+        this.budgetMonth = this.budget + this.incomeMonth - this.expensesMonth + monthDeposit;
     }
 
     getBudgetDay() {
@@ -272,8 +291,8 @@ class AppData {
 
     getInfoDeposit() {
         if (this.deposit) {
-            this.percentDeposit = checkPrintValue('Какой годовой процент?', 10, true);
-            this.moneyDeposit = checkPrintValue('Какая сумма заложена?', 10000, true);
+            this.percentDeposit = depositPercent.value;
+            this.moneyDeposit = depositAmount.value;
         }
     }
 
@@ -295,6 +314,94 @@ class AppData {
         }
     }
 
+    changePercent() {
+        const valueSelect = this.value;
+        if (valueSelect === 'other') {
+            depositPercent.style.display = 'inline-block';
+        } else {
+            depositPercent.value = valueSelect;
+            depositPercent.style.display = ' none';
+            depositPercent.value = '';
+            
+            if (salaryAmount.value !== '') {
+                start.disabled = false;
+            } else {
+                start.disabled = true;
+            }
+        }
+    }
+
+    depositHandler() {
+        if (depositCheck.checked) {
+            depositBank.style.display = 'inline-block';
+            depositAmount.style.display = 'inline-block';
+            this.deposit = true;
+            depositBank.addEventListener('change', this.changePercent);
+        } else {
+            depositBank.style.display = 'none';
+            depositAmount.style.display = 'none';
+            depositPercent.style.display = 'inline-block';
+            depositBank.value = '';
+            depositAmount.value = '';
+            depositPercent.value = '';
+            this.deposit = false;
+            depositBank.removeEventListener('change', this.changePercent);
+        }
+    }
+
+    setCookie() {
+        localStorage.setItem('budget_month', budgetMonthValue.value);
+        localStorage.setItem('budget_day', budgetDayValue.value);
+        localStorage.setItem('expenses_month', expensesMonthValue.value);
+        localStorage.setItem('additional_income', additionalIncomeValue.value);
+        localStorage.setItem('additional_expenses', additionalExpensesValue.value);
+        localStorage.setItem('income_period', incomePerionValue.value);
+        localStorage.setItem('target_month', targetMonthValue.value);
+
+        //cookies
+        document.cookie = `budget_month=${budgetMonthValue.value}`;
+        document.cookie = `budget_day=${budgetDayValue.value}`;
+        document.cookie = `expenses_month=${expensesMonthValue.value}`;
+        document.cookie = `additional_income=${additionalIncomeValue.value}`;
+        document.cookie = `additional_expenses=${additionalExpensesValue.value}`;
+        document.cookie = `income_period=${incomePerionValue.value}`;
+        document.cookie = `target_month=${targetMonthValue.value}`;
+        document.cookie = `isLoad=true`;
+    }
+
+    getCookie(name) {
+        const cookies = document.cookie.split(';');
+        let cookieObj = {};
+    
+        for (let cookie of cookies) {
+            const values = cookie.trim().split('=');
+            if (values[0] === name) {
+                cookieObj = {name: values[0], text: values[1] ? values[1] : ''};
+
+                if (values[0] !== 'isLoad' && localStorage.getItem(name) !== values[1]) {
+                    this.checkConformity = false;
+                    document.cookie='isLoad=false';
+                    break;
+                }
+            }
+        }
+
+        if (cookieObj !== {}) {
+            document.cookie='isLoad=false';
+            this.checkConformity = false;
+        }
+        
+        return cookieObj;
+    }
+
+    resetCookie() {
+        localStorage.clear();
+
+        document.cookie.split(";")
+            .forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+    }
+
     eventsListeners() {
         const _this = this;
         start.addEventListener('click', _this.start.bind(_this));
@@ -308,9 +415,6 @@ class AppData {
         salaryAmount.addEventListener('input', (e) => {
             _this.validInput(e, true);
             start.disabled = e.target.value === '' ? true :  false;
-        });
-        salaryAmount.addEventListener('input', (e) => {
-            _this.validInput(e, true);
         });
        
         let income = document.querySelector('.income'),
@@ -350,8 +454,54 @@ class AppData {
                 _this.validInput(e);
             });
         });
+
+        depositCheck.addEventListener('change', this.depositHandler.bind(this));
+
+        
+        depositAmount.addEventListener('input', (e) => {
+            _this.validInput(e, true);
+        });
+
+        depositPercent.addEventListener('input', (e) => {
+            _this.validInput(e, true);
+            if (+e.target.value > 0 && +e.target.value < 100) {
+                if (salaryAmount.value !== '') {
+                    start.disabled = false;
+                }
+            } else {
+                alert('Введите корректное значение в поле проценты');
+                e.target.value = '';
+                start.disabled = true;
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const isLoad = this.getCookie('isLoad');
+
+            if (isLoad && isLoad.text) {
+                document.querySelectorAll('input').forEach(item => {
+                    item.disabled = true;
+                });
+
+                budgetMonthValue.value = this.getCookie('income_period').text;
+                budgetDayValue.value = this.getCookie('budget_day').text;
+                expensesMonthValue.value = this.getCookie('expenses_month').text;
+                additionalExpensesValue.value = this.getCookie('additional_expenses').text;
+                additionalIncomeValue.value = this.getCookie('additional_income').text;
+                targetMonthValue.value = this.getCookie('target_month').text;
+                this.blockingInput();
+            } 
+
+            if (!isLoad.text) {
+                this.resetCookie();
+                this.reset();
+            }
+        });
     }
 }
+
+
+
 
 const appData = new AppData();
 
