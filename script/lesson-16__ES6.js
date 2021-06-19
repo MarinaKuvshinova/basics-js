@@ -386,10 +386,10 @@ class AppData {
             }
         }
 
-        if (cookieObj !== {}) {
-            document.cookie='isLoad=false';
-            this.checkConformity = false;
-        }
+        // if (cookieObj !== {}) {
+        //     document.cookie='isLoad=false';
+        //     this.checkConformity = false;
+        // }
         
         return cookieObj;
     }
@@ -483,16 +483,16 @@ class AppData {
                     item.disabled = true;
                 });
 
-                budgetMonthValue.value = this.getCookie('income_period').text;
+                budgetMonthValue.value = this.getCookie('budget_month').text;
                 budgetDayValue.value = this.getCookie('budget_day').text;
                 expensesMonthValue.value = this.getCookie('expenses_month').text;
                 additionalExpensesValue.value = this.getCookie('additional_expenses').text;
                 additionalIncomeValue.value = this.getCookie('additional_income').text;
+                incomePerionValue.value = this.getCookie('income_period').text;
                 targetMonthValue.value = this.getCookie('target_month').text;
                 this.blockingInput();
-            } 
-
-            if (!isLoad.text) {
+            }
+            if (isLoad.text === 'false' || !this.checkConformity) {
                 this.resetCookie();
                 this.reset();
             }
