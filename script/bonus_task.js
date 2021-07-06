@@ -64,15 +64,15 @@ const init = () => {
 const register = () => {
     let name;
 
-    name = prompt('Введите имя и фамилию');
+    name = prompt('Введите имя и фамилию').trim();
 
-    if (!name.trim().match(/\s/) || name.trim().match(/\s/).length > 1) {
+    if (!name.match(/\s/) || name.match(/\s/).length > 1) {
         alert("Введенны не корректные данные");
         return;
     }
 
-    const firstName = name.trim().split(' ')[0],
-        lastName = name.trim().split(' ')[1],
+    const firstName = name.split(' ')[0],
+        lastName = name.split(' ')[1],
         login = prompt('Введите login'),
         password = prompt('Введите пароль'),
         time = new Date(),
